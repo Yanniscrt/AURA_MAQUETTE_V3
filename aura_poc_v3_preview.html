@@ -1,0 +1,727 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#060a0e;--bg1:#0d1319;--bg2:#121b24;--bg3:#18232e;--bg4:#1f2d3d;
+  --cyan:#00d4c8;--amber:#f5a623;--violet:#9b7aff;--red:#e04040;--green:#3cdc78;
+  --tx1:#e2eaf2;--tx2:#8a9bb0;--tx3:#4a5a6a;
+  --bd0:rgba(255,255,255,0.05);--bd1:rgba(0,212,200,0.25);
+  --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+  --r4:4px;--r8:8px;--r12:12px;--r16:16px;
+}
+.wrap{background:var(--bg0);font-family:var(--sans);color:var(--tx1);overflow:hidden}
+.sr-only{position:absolute;left:-9999px}
+
+/* tabs */
+.tabs{display:flex;gap:1px;padding:14px 18px 0;background:var(--bg0);border-bottom:1px solid var(--bd0);position:sticky;top:0;z-index:200}
+.tab{padding:7px 13px;font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--tx3);border-radius:var(--r4) var(--r4) 0 0;cursor:pointer;border:1px solid transparent;border-bottom:none;background:transparent;transition:all .2s}
+.tab.on{color:var(--cyan);border-color:var(--bd0);background:var(--bg1);border-bottom-color:var(--bg1);margin-bottom:-1px}
+.tab:hover:not(.on){color:var(--tx2)}
+.scr{display:none;flex-direction:column}
+.scr.on{display:flex}
+
+/* ═══════════ TOKENS ═══════════ */
+#s-tokens{background:var(--bg1);padding:20px}
+.mono-tag{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:4px}
+.page-title{font-size:20px;font-weight:500;line-height:1.2;margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--tx2)}
+.tier-stack{display:flex;flex-direction:column;gap:10px;margin:18px 0}
+.tier-card{background:var(--bg2);border:1px solid var(--bd0);border-radius:var(--r12);padding:14px;cursor:pointer;transition:border-color .2s}
+.tier-card:hover{border-color:var(--bd1)}.tier-card.exp{border-color:var(--bd1);background:var(--bg3)}
+.tier-head{display:flex;align-items:center;gap:10px}
+.tier-badge{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:20px;flex-shrink:0;letter-spacing:.06em}
+.t1 .tier-badge{background:rgba(155,122,255,.18);color:var(--violet)}
+.t2 .tier-badge{background:rgba(0,212,200,.12);color:var(--cyan)}
+.t3 .tier-badge{background:rgba(245,166,35,.15);color:var(--amber)}
+.tier-name{font-size:13px;font-weight:500}.tier-key{font-family:var(--mono);font-size:10px;color:var(--tx3);margin-left:auto;flex-shrink:0}
+.tier-chev{color:var(--tx3);transition:transform .2s;font-size:10px}.tier-card.exp .tier-chev{transform:rotate(180deg)}
+.tier-body{overflow:hidden;max-height:0;transition:max-height .3s ease}.tier-card.exp .tier-body{max-height:220px}
+.tier-inner{padding-top:12px;border-top:1px solid var(--bd0);margin-top:12px}
+.tier-desc{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:10px}
+.tok-pill{display:inline-block;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:4px;background:var(--bg4);color:var(--tx2);border:1px solid var(--bd0);margin:2px}
+.flow-demo{background:var(--bg2);border:1px solid var(--bd0);border-radius:var(--r12);padding:14px}
+.flow-title{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--tx3);text-transform:uppercase;margin-bottom:12px}
+.flow-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.flow-node{background:var(--bg4);border-radius:var(--r8);padding:8px 10px;flex:1;min-width:80px}
+.fn-lbl{font-size:9px;color:var(--tx3);margin-bottom:3px;font-family:var(--mono)}
+.fn-v1{color:var(--violet)}.fn-v2{color:var(--cyan)}.fn-v3{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)}
+.flow-arr{color:var(--tx3);font-size:12px;flex-shrink:0}
+.delta-bar{margin-top:14px}
+.delta-lbl{font-size:11px;color:var(--tx2);margin-bottom:6px;display:flex;justify-content:space-between}
+.delta-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;position:relative}
+.delta-fill{height:100%;border-radius:3px;background:var(--cyan);transition:width .4s}
+.delta-thresh{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--amber);left:25%}
+.delta-tip{position:absolute;top:-16px;left:25%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;color:var(--amber);white-space:nowrap}
+.sim-btn{background:var(--bg4);border:1px solid var(--bd1);border-radius:var(--r4);padding:5px 12px;font-family:var(--mono);font-size:9px;color:var(--cyan);cursor:pointer;transition:opacity .2s;margin-top:8px}
+
+/* ═══════════ CALIBRAGE ═══════════ */
+#s-calib{background:var(--bg1);min-height:700px}
+.calib-hdr{padding:20px 20px 0}
+.step-dots{display:flex;gap:4px;margin:10px 20px 0}
+.sdot{width:20px;height:4px;border-radius:2px;background:var(--bg4)}.sdot.done{background:var(--cyan)}
+.sec-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--tx3);text-transform:uppercase;margin:16px 20px 10px;padding-bottom:5px;border-bottom:1px solid var(--bd0)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px}
+.pbtn{background:var(--bg2);border:1.5px solid var(--bd0);border-radius:var(--r8);padding:11px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;color:var(--tx2);font-family:var(--sans);text-align:left}
+.pbtn:hover{border-color:var(--bd1)}.pbtn.sel{border-color:var(--cyan);background:rgba(0,212,200,.07);color:var(--tx1)}
+.pico{width:30px;height:30px;border-radius:var(--r4);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pchk{margin-left:auto;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--tx3);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pbtn.sel .pchk{background:var(--cyan);border-color:var(--cyan)}
+.pbtn.sel .pchk::after{content:'';width:6px;height:3.5px;border-left:1.5px solid #060a0e;border-bottom:1.5px solid #060a0e;transform:rotate(-45deg) translateY(-1px);display:block}
+.contrast-row{margin:10px 20px 0;background:rgba(0,212,200,.05);border:1px solid var(--bd1);border-radius:var(--r8);padding:9px 12px;display:flex;align-items:center;gap:10px}
+.cratio{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--cyan)}
+.ctxt{font-size:11px;color:var(--tx2);line-height:1.4}
+.aaa-pill{margin-left:auto;background:rgba(0,212,200,.14);color:var(--cyan);font-family:var(--mono);font-size:8px;letter-spacing:.1em;padding:3px 8px;border-radius:20px;flex-shrink:0}
+.slider-wrap{padding:0 20px;display:flex;flex-direction:column;gap:14px}
+.slrow{display:flex;flex-direction:column;gap:5px}
+.slmeta{display:flex;justify-content:space-between;align-items:center}
+.slname{font-size:12px;color:var(--tx1);display:flex;align-items:center;gap:7px}
+.slico{width:20px;height:20px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center}
+.slval{font-family:var(--mono);font-size:10px;color:var(--cyan);min-width:28px;text-align:right}
+input[type=range].hp{-webkit-appearance:none;appearance:none;width:100%;height:48px;background:transparent;cursor:pointer;padding:14px 0}
+input[type=range].hp::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:var(--bg4)}
+input[type=range].hp::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--cyan);margin-top:-10px;border:3px solid var(--bg1);transition:transform .1s}
+input[type=range].hp:active::-webkit-slider-thumb{transform:scale(1.2)}
+.pulse-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--cyan)}
+.pulse-dot.go{animation:pdot .4s ease-out}
+@keyframes pdot{0%{transform:scale(1);opacity:1}100%{transform:scale(3.5);opacity:0}}
+
+/* ═══ PREVIEW PANEL ═══ */
+.preview-panel{margin:0 20px 0;border-radius:var(--r12);overflow:hidden;border:1px solid var(--bd0);transition:border-color .3s}
+.preview-panel.active{border-color:var(--bd1)}
+.preview-header{background:var(--bg3);padding:8px 12px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.prev-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--tx3);text-transform:uppercase}
+.prev-persona{font-family:var(--mono);font-size:8px;color:var(--cyan);display:flex;align-items:center;gap:5px}
+.prev-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.preview-body{background:var(--bg2);padding:12px;display:flex;gap:12px;align-items:stretch;min-height:110px}
+
+/* Haptic visualizer */
+.haptic-viz{flex:1;display:flex;flex-direction:column;gap:6px}
+.hv-title{font-size:10px;color:var(--tx2);margin-bottom:2px}
+.waveform-wrap{position:relative;height:50px;background:var(--bg4);border-radius:var(--r4);overflow:hidden}
+.waveform-cv{width:100%;height:100%;display:block}
+.hv-meta{display:flex;justify-content:space-between;margin-top:4px}
+.hv-hz{font-family:var(--mono);font-size:10px;color:var(--amber);font-weight:700}
+.hv-mode{font-size:10px;color:var(--tx2)}
+.hv-desc{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;font-style:italic}
+
+/* Saillance mini */
+.saill-viz{flex:1;display:flex;flex-direction:column;gap:6px}
+.sv-title{font-size:10px;color:var(--tx2);margin-bottom:2px}
+.saill-cv-wrap{height:50px;background:var(--bg4);border-radius:var(--r4);overflow:hidden}
+.saill-mini-cv{width:100%;height:100%;display:block}
+.sv-meta{display:flex;justify-content:space-between;margin-top:4px}
+.sv-density{font-family:var(--mono);font-size:10px;color:var(--cyan);font-weight:700}
+.sv-desc{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;font-style:italic}
+
+/* Audio viz */
+.audio-viz{flex:1;display:flex;flex-direction:column;gap:6px}
+.av-title{font-size:10px;color:var(--tx2);margin-bottom:2px}
+.bars-wrap{height:50px;background:var(--bg4);border-radius:var(--r4);overflow:hidden;display:flex;align-items:flex-end;gap:2px;padding:4px}
+.bar{flex:1;border-radius:2px 2px 0 0;background:var(--violet);transition:height .15s;min-height:3px}
+.av-meta{display:flex;justify-content:space-between;margin-top:4px}
+.av-words{font-family:var(--mono);font-size:9px;color:var(--violet)}
+.av-desc{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;font-style:italic}
+
+/* Divider */
+.viz-divider{width:1px;background:var(--bd0);flex-shrink:0}
+
+.preview-idle{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:6px;opacity:.4}
+.prev-idle-ico{font-size:22px}
+.prev-idle-txt{font-family:var(--mono);font-size:9px;color:var(--tx3);letter-spacing:.1em;text-align:center}
+
+.cta{margin:16px 20px;background:var(--cyan);color:#060a0e;border:none;border-radius:var(--r8);padding:13px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;cursor:pointer;width:calc(100% - 40px);font-weight:700;transition:opacity .2s,transform .1s}
+.cta:hover{opacity:.9}.cta:active{transform:scale(.98)}
+
+/* ═══════════ PLAYER ═══════════ */
+#s-player{background:#000;min-height:640px}
+.vid-vp{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;cursor:pointer}
+.scene-bg{width:100%;height:100%;transition:background 2.5s ease}
+.grain{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none}
+.scene-lbl{position:absolute;bottom:14px;left:14px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.35);text-transform:uppercase}
+.ctrl-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.88) 0%,transparent 55%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 14px 10px;opacity:0;transition:opacity .4s;pointer-events:none}
+.ctrl-ov.vis{opacity:1;pointer-events:all}
+.fade-bar{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(0,212,200,.4);transform-origin:left;transition:transform 3s linear}
+.silence-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 10px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:5px;transition:opacity .3s}
+.sil-dot{width:5px;height:5px;border-radius:50%;background:var(--tx3)}
+.silence-badge.act .sil-dot{background:var(--amber);animation:blink 1.2s infinite}
+.silence-badge.hon .sil-dot{background:var(--green)}
+.delta-ind{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);border-radius:var(--r8);padding:5px 8px;font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.4);display:flex;flex-direction:column;gap:2px}
+.di-row{display:flex;align-items:center;gap:5px}
+.di-bar-w{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;position:relative}
+.di-fill{height:100%;background:var(--cyan);border-radius:2px;transition:width .5s}
+.di-thr{position:absolute;left:25%;top:0;bottom:0;width:1px;background:var(--amber);opacity:.6}
+.di-val{font-size:8px;color:var(--cyan);min-width:22px;text-align:right}
+.saill-wrap{margin-bottom:6px;height:26px;position:relative;overflow:hidden;border-radius:2px}
+.saill-lbl{position:absolute;right:0;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:7px;letter-spacing:.1em;color:rgba(255,255,255,.35);pointer-events:none;text-transform:uppercase}
+.saill-cv{width:100%;height:100%;display:block}
+.prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prog-track{flex:1;height:3px;background:rgba(255,255,255,.18);border-radius:2px;cursor:pointer;position:relative}
+.prog-fill{height:100%;background:var(--cyan);border-radius:2px;transition:width .1s linear;position:relative}
+.prog-fill::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:var(--cyan)}
+.time-disp{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap}
+.ctl-row{display:flex;align-items:center;gap:10px}
+.cbtn{background:transparent;border:none;color:rgba(255,255,255,.75);cursor:pointer;padding:5px;border-radius:5px;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s}
+.cbtn:hover{color:#fff;background:rgba(255,255,255,.1)}.cbtn.on{color:var(--cyan)}
+.pp-btn{width:36px;height:36px;border-radius:50%;background:var(--cyan);color:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;flex-shrink:0}
+.pp-btn:active{transform:scale(.95)}
+.spc{flex:1}
+.aura-tag{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--cyan);border:1px solid rgba(0,212,200,.28);padding:2px 7px;border-radius:20px}
+.player-info{background:var(--bg1);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-radius:var(--r8);border:1px solid var(--bd0)}
+.tog-info{display:flex;flex-direction:column;gap:2px}
+.tog-title{font-size:12px;font-weight:500}.tog-desc{font-size:10px;color:var(--tx2)}
+.tog-sw{width:40px;height:22px;border-radius:11px;background:var(--bg4);border:1px solid var(--bd0);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog-sw.on{background:var(--cyan);border-color:var(--cyan)}
+.tog-knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.tog-sw.on .tog-knob{transform:translateX(18px)}
+.scene-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.sbtn{padding:7px 3px;font-size:9px;font-family:var(--mono);color:var(--tx3);background:var(--bg2);border:1px solid var(--bd0);border-radius:var(--r4);cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.swatch{width:18px;height:12px;border-radius:2px}
+.sbtn:hover{border-color:var(--bd1);color:var(--tx2)}.sbtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,200,.06)}
+.ergo-rules{display:flex;flex-direction:column;gap:6px}
+.ergo-card{background:var(--bg2);border:1px solid var(--bd0);border-radius:var(--r8);padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.ergo-ico{width:28px;height:28px;border-radius:var(--r4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ergo-txt{flex:1}
+.ergo-name{font-size:11px;font-weight:500;margin-bottom:2px}
+.ergo-desc{font-size:10px;color:var(--tx2);line-height:1.4}
+.ergo-status{font-family:var(--mono);font-size:8px;margin-top:4px}
+.st-on{color:var(--green)}.st-sb{color:var(--amber)}.st-off{color:var(--tx3)}
+.hold-hint{text-align:center;font-size:10px;color:var(--tx3);font-family:var(--mono);letter-spacing:.04em;padding:4px 0}
+.hold-hint span{color:var(--tx2)}
+.ripple{position:absolute;border-radius:50%;border:2px solid rgba(0,212,200,.55);pointer-events:none;animation:rip .6s ease-out forwards;transform:translate(-50%,-50%)}
+@keyframes rip{from{width:0;height:0;opacity:.8}to{width:120px;height:120px;opacity:0}}
+</style>
+
+<div class="wrap" id="app">
+<h2 class="sr-only">Prototype AURA v3 — Calibrage avec aperçu temps réel, DTT et Player inclusif</h2>
+
+<div class="tabs">
+  <div class="tab on" onclick="goTab('tokens')">◈ Tokens DTT</div>
+  <div class="tab" onclick="goTab('calib')">⊕ Calibrage</div>
+  <div class="tab" onclick="goTab('player')">▶ AURA Player</div>
+</div>
+
+<!-- ══ TOKENS ══ -->
+<div id="s-tokens" class="scr on">
+  <div style="padding:20px">
+    <div class="mono-tag">3.2.1 · Architecture logicielle</div>
+    <div class="page-title">Design Tokens Transmodaux</div>
+    <div class="page-sub" style="margin-bottom:18px">Hiérarchie 3 niveaux · Signal cinématographique → périphérique</div>
+    <div class="tier-stack">
+      <div class="tier-card t1 exp" onclick="togTier(this)">
+        <div class="tier-head"><div class="tier-badge">Tier 1 · Global</div><div class="tier-name">Tokens Contextuels</div><div class="tier-key">token.context.*</div><div class="tier-chev">▲</div></div>
+        <div class="tier-body"><div class="tier-inner"><div class="tier-desc">Chef d'orchestre du système — encode la macro-ambiance et la charge dramatique de la scène analysée par le moteur IA.</div><div><span class="tok-pill">token.context.ambiance.oppressive</span><span class="tok-pill">token.context.drama.intensity: 0.87</span><span class="tok-pill">token.context.temp.warm</span></div></div></div>
+      </div>
+      <div class="tier-card t2" onclick="togTier(this)">
+        <div class="tier-head"><div class="tier-badge">Tier 2 · Composant</div><div class="tier-name">Tokens de Composants</div><div class="tier-key">token.component.*</div><div class="tier-chev">▼</div></div>
+        <div class="tier-body"><div class="tier-inner"><div class="tier-desc">Lie l'ambiance globale à un comportement d'interface spécifique — visuel, acoustique ou mécanique.</div><div><span class="tok-pill">token.component.haptic.waveform.pulsing</span><span class="tok-pill">token.component.saillance.density: 0.75</span><span class="tok-pill">token.component.audio.desc.active</span></div></div></div>
+      </div>
+      <div class="tier-card t3" onclick="togTier(this)">
+        <div class="tier-head"><div class="tier-badge">Tier 3 · Matériel</div><div class="tier-name">Tokens Spécifiques Matériel</div><div class="tier-key">token.hardware.*</div><div class="tier-chev">▼</div></div>
+        <div class="tier-body"><div class="tier-inner"><div class="tier-desc">Traduit les directives supérieures en valeurs physiques brutes directement interprétables par le processeur du périphérique.</div><div><span class="tok-pill">token.hardware.vibration.frequency: 180Hz</span><span class="tok-pill">token.hardware.vibration.amplitude: 0.6</span><span class="tok-pill">token.hardware.audio.pitch: 440Hz</span></div></div></div>
+      </div>
+    </div>
+    <div class="flow-demo">
+      <div class="flow-title">Flux de signal — Seuil ΔI = 25%</div>
+      <div class="flow-row">
+        <div class="flow-node"><div class="fn-lbl">Étalonnage IA</div><div class="fn-v1" id="fn-amb" style="font-size:13px;font-weight:500">Oppressif</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-node"><div class="fn-lbl">Composant</div><div class="fn-v2" id="fn-comp" style="font-size:13px;font-weight:500">Pulsing</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-node"><div class="fn-lbl">Matériel</div><div class="fn-v3" id="fn-hz">180 Hz</div></div>
+      </div>
+      <div class="delta-bar">
+        <div class="delta-lbl"><span>Variation ΔI (saturation / luminance)</span><span id="dpct" style="font-family:var(--mono);font-size:10px;color:var(--cyan)">0%</span></div>
+        <div class="delta-track"><div class="delta-fill" id="dfill" style="width:0%"></div><div class="delta-thresh"><div class="delta-tip">Seuil 25%</div></div></div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <button class="sim-btn" onclick="simDelta()">Simuler une variation de scène ↗</button>
+          <div id="dst" style="font-family:var(--mono);font-size:9px;color:var(--tx3)">En attente</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CALIBRAGE ══ -->
+<div id="s-calib" class="scr">
+  <div class="calib-hdr">
+    <div class="mono-tag">Onboarding · Étape 1/3</div>
+    <div class="page-title">Tableau de bord de calibrage</div>
+  </div>
+  <div class="step-dots"><div class="sdot done"></div><div class="sdot done"></div><div class="sdot"></div></div>
+
+  <div class="contrast-row">
+    <div class="cratio">7:1</div>
+    <div class="ctxt">Ratio de luminance actif<br>Conformité WCAG 2.1 seuil AAA</div>
+    <div class="aaa-pill">AAA</div>
+  </div>
+
+  <div class="sec-lbl">Profil d'accessibilité — Double codage icône + couleur</div>
+  <div class="profile-grid">
+    <button class="pbtn sel" onclick="selProf(this,'standard')">
+      <div class="pico" style="background:rgba(155,122,255,.15)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#9b7aff" stroke-width="1.4"/><circle cx="8" cy="6.5" r="2" stroke="#9b7aff" stroke-width="1.4"/><path d="M3.5 13.5c0-2.485 2.015-4.5 4.5-4.5s4.5 2.015 4.5 4.5" stroke="#9b7aff" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <div><div style="font-size:11px;font-weight:500;color:var(--tx1)">Standard</div><div style="font-size:9px;color:var(--tx3)">Mode par défaut</div></div>
+      <div class="pchk"></div>
+    </button>
+    <button class="pbtn" onclick="selProf(this,'thomas')">
+      <div class="pico" style="background:rgba(245,166,35,.14)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4.5" cy="8" r="2.5" stroke="#f5a623" stroke-width="1.4"/><circle cx="11.5" cy="8" r="2.5" stroke="#f5a623" stroke-width="1.4"/><line x1="7" y1="8" x2="9" y2="8" stroke="#f5a623" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <div><div style="font-size:11px;font-weight:500;color:var(--tx1)">Thomas</div><div style="font-size:9px;color:var(--tx3)">Dyschromatopsie · Haptique</div></div>
+      <div class="pchk"></div>
+    </button>
+    <button class="pbtn" onclick="selProf(this,'eleonore')">
+      <div class="pico" style="background:rgba(0,212,200,.1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1.5" stroke="#00d4c8" stroke-width="1.4"/><line x1="5" y1="7" x2="7" y2="7" stroke="#00d4c8" stroke-width="1.4" stroke-linecap="round"/><line x1="5" y1="9.5" x2="11" y2="9.5" stroke="#00d4c8" stroke-width="1.4" stroke-linecap="round"/><line x1="9" y1="7" x2="11" y2="7" stroke="#00d4c8" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <div><div style="font-size:11px;font-weight:500;color:var(--tx1)">Éléonore</div><div style="font-size:9px;color:var(--tx3)">Luminance · Saillance visuelle</div></div>
+      <div class="pchk"></div>
+    </button>
+    <button class="pbtn" onclick="selProf(this,'hypersens')">
+      <div class="pico" style="background:rgba(224,64,64,.12)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M3 5l10 6M3 11l10-6" stroke="#e04040" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <div><div style="font-size:11px;font-weight:500;color:var(--tx1)">Hypersensibilité</div><div style="font-size:9px;color:var(--tx3)">Stimuli réduits</div></div>
+      <div class="pchk"></div>
+    </button>
+  </div>
+
+  <div class="sec-lbl">Intensité — Cible tactile ≥ 48px · Aperçu en temps réel</div>
+  <div class="slider-wrap">
+    <div class="slrow">
+      <div class="slmeta">
+        <div class="slname"><div class="slico" style="background:rgba(155,122,255,.14)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="2" stroke="#9b7aff" stroke-width="1.3"/><path d="M6 1v2M6 9v2M1 6h2M9 6h2" stroke="#9b7aff" stroke-width="1.3" stroke-linecap="round"/></svg></div>Vibration haptique</div>
+        <div style="display:flex;align-items:center;gap:6px"><div class="pulse-dot" id="pd1"></div><div class="slval" id="sv1">60%</div></div>
+      </div>
+      <input type="range" class="hp" id="sl-vib" min="0" max="100" value="60" step="1" oninput="onSlider('vib',this.value)">
+    </div>
+    <div class="slrow">
+      <div class="slmeta">
+        <div class="slname"><div class="slico" style="background:rgba(0,212,200,.1)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9L6 3L10 9" stroke="#00d4c8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Saillance chromatique</div>
+        <div style="display:flex;align-items:center;gap:6px"><div class="pulse-dot" id="pd2"></div><div class="slval" id="sv2">75%</div></div>
+      </div>
+      <input type="range" class="hp" id="sl-sai" min="0" max="100" value="75" step="1" oninput="onSlider('sai',this.value)">
+    </div>
+    <div class="slrow">
+      <div class="slmeta">
+        <div class="slname"><div class="slico" style="background:rgba(245,166,35,.13)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9V4a4 4 0 018 0v5" stroke="#f5a623" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="11" y2="9" stroke="#f5a623" stroke-width="1.3" stroke-linecap="round"/></svg></div>Descriptions vocales</div>
+        <div style="display:flex;align-items:center;gap:6px"><div class="pulse-dot" id="pd3"></div><div class="slval" id="sv3">40%</div></div>
+      </div>
+      <input type="range" class="hp" id="sl-aud" min="0" max="100" value="40" step="1" oninput="onSlider('aud',this.value)">
+    </div>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="sec-lbl" style="margin-top:14px">Aperçu de l'expérience en temps réel</div>
+  <div class="preview-panel" id="prevPanel">
+    <div class="preview-header">
+      <div class="prev-label" id="prevLabel">Aperçu · Vibration haptique</div>
+      <div class="prev-persona" id="prevPersona"><div class="prev-dot"></div><span id="prevPersonaName">Thomas — signal sub-perceptuel</span></div>
+    </div>
+    <div class="preview-body" id="prevBody">
+      <!-- Waveform haptic -->
+      <div class="haptic-viz" id="vizHaptic">
+        <div class="hv-title">Forme d'onde — waveform</div>
+        <div class="waveform-wrap"><canvas class="waveform-cv" id="wfCv"></canvas></div>
+        <div class="hv-meta"><div class="hv-hz" id="wfHz">108 Hz</div><div class="hv-mode" id="wfMode">Pulsing modéré</div></div>
+        <div class="hv-desc" id="wfDesc">"Si la musique devient stressante, je comprends que la scène est tendue" — Thomas</div>
+      </div>
+      <div class="viz-divider"></div>
+      <!-- Saillance -->
+      <div class="saill-viz" id="vizSaill">
+        <div class="sv-title">Ligne de saillance</div>
+        <div class="saill-cv-wrap"><canvas class="saill-mini-cv" id="smCv"></canvas></div>
+        <div class="sv-meta"><div class="sv-density" id="smDensity">Densité 75%</div></div>
+        <div class="sv-desc" id="smDesc">Hachures dynamiques — substitut visuel de la chrominance</div>
+      </div>
+      <div class="viz-divider"></div>
+      <!-- Audio bars -->
+      <div class="audio-viz" id="vizAudio">
+        <div class="av-title">Descriptions vocales</div>
+        <div class="bars-wrap" id="audioBars"></div>
+        <div class="av-meta"><div class="av-words" id="avWords">~3 mots/min</div></div>
+        <div class="av-desc" id="avDesc">Volume bas — mode discret non perturbateur</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="cta" onclick="goTab('player')">Valider et lancer AURA →</button>
+</div>
+
+<!-- ══ PLAYER ══ -->
+<div id="s-player" class="scr">
+  <div class="vid-vp" id="vp" onmousedown="holdStart(event)" onmouseup="holdEnd()" onmouseleave="holdEnd()" ontouchstart="holdStart(event)" ontouchend="holdEnd()">
+    <div style="width:100%;height:100%;position:relative">
+      <div class="scene-bg" id="sbg"></div>
+      <div class="grain"></div>
+      <div class="scene-lbl" id="slbl">Scène 1 — Forêt nocturne</div>
+      <div class="delta-ind" id="diInd">
+        <div style="font-size:7px;letter-spacing:.1em;color:rgba(255,255,255,.35);margin-bottom:3px">ΔI TOLÉRANCE</div>
+        <div class="di-row"><div style="font-size:7px;color:rgba(255,255,255,.3);width:28px">Sat.</div><div class="di-bar-w"><div class="di-fill" id="diSat" style="width:12%"></div><div class="di-thr"></div></div><div class="di-val" id="diSatV">12%</div></div>
+        <div class="di-row"><div style="font-size:7px;color:rgba(255,255,255,.3);width:28px">Lum.</div><div class="di-bar-w"><div class="di-fill" id="diLum" style="width:8%"></div><div class="di-thr"></div></div><div class="di-val" id="diLumV">8%</div></div>
+        <div id="diAct" style="font-size:7px;margin-top:3px;color:rgba(255,255,255,.25)">Signal lissé</div>
+      </div>
+      <div class="silence-badge" id="silBadge"><div class="sil-dot"></div><span id="silTxt">Dialogue · Silence haptique</span></div>
+    </div>
+    <div class="ctrl-ov" id="ctrlOv">
+      <div class="fade-bar" id="fadeBar"></div>
+      <div class="saill-wrap" id="saillWrap"><canvas class="saill-cv" id="saillCv"></canvas><div class="saill-lbl">Ligne de saillance</div></div>
+      <div class="prog-row">
+        <div class="prog-track" id="progTrack" onclick="seekVid(event)"><div class="prog-fill" id="progFill" style="width:23%"></div></div>
+        <div class="time-disp" id="timDisp">04:32 / 19:47</div>
+      </div>
+      <div class="ctl-row">
+        <button class="pp-btn" id="ppBtn" onclick="togPlay()"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" id="ppIco"><rect x="2" y="1" width="3.5" height="12" rx=".8"/><rect x="8.5" y="1" width="3.5" height="12" rx=".8"/></svg></button>
+        <button class="cbtn" onclick="this.classList.toggle('on')"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><rect x="1.5" y="3.5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="8.5" x2="9" y2="8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="4" y1="11" x2="7" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        <button class="cbtn" onclick="this.classList.toggle('on')"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="8.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5a5 5 0 000 7M12 5a5 5 0 010 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        <div class="spc"></div>
+        <div class="aura-tag">AURA v1.0</div>
+        <button class="cbtn"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M2 6.5V2h4.5M10.5 2H15v4.5M15 10.5V15h-4.5M6.5 15H2v-4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="player-info">
+    <div class="toggle-row">
+      <div class="tog-info"><div class="tog-title">Ligne de saillance chromatique</div><div class="tog-desc">Spectrogramme visuel en hachures dynamiques — Éléonore (Persona 2)</div></div>
+      <div class="tog-sw on" id="saillTog" onclick="togSaill()"><div class="tog-knob"></div></div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.15em;color:var(--tx3);text-transform:uppercase;margin-bottom:7px">Simuler une scène</div>
+      <div class="scene-btns">
+        <button class="sbtn on" onclick="selScene(0,this)"><div class="swatch" style="background:#1a3a2a"></div>Forêt</button>
+        <button class="sbtn" onclick="selScene(1,this)"><div class="swatch" style="background:#3a1a1a"></div>Feu</button>
+        <button class="sbtn" onclick="selScene(2,this)"><div class="swatch" style="background:#1a2a3a"></div>Mer</button>
+        <button class="sbtn" onclick="selScene(3,this)"><div class="swatch" style="background:#2a1a3a"></div>Ville</button>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.15em;color:var(--tx3);text-transform:uppercase;margin-bottom:7px">Règles ergonomiques (3.2.3)</div>
+      <div class="ergo-rules">
+        <div class="ergo-card"><div class="ergo-ico" style="background:rgba(0,212,200,.1)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10h3l2-6 2 4 1.5-2H12" stroke="#00d4c8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ergo-txt"><div class="ergo-name">Seuil Différentiel ΔI = 25%</div><div class="ergo-desc">Signal émis uniquement si variation > 25% de sat. ou luminance.</div><div class="ergo-status st-on" id="es1">● Actif — Signal lissé</div></div></div>
+        <div class="ergo-card"><div class="ergo-ico" style="background:rgba(245,166,35,.12)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v5l3 2" stroke="#f5a623" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="7" r="5" stroke="#f5a623" stroke-width="1.2"/><line x1="3" y1="3" x2="11" y2="11" stroke="#f5a623" stroke-width="1.2" stroke-linecap="round"/></svg></div><div class="ergo-txt"><div class="ergo-name">Silence Haptique</div><div class="ergo-desc">Canal tactile en veille lors des dialogues — maximise l'impact des ruptures.</div><div class="ergo-status st-sb" id="es2">◐ En veille — Scène dialogue</div></div></div>
+        <div class="ergo-card"><div class="ergo-ico" style="background:rgba(155,122,255,.1)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="2" stroke="#9b7aff" stroke-width="1.2"/><path d="M5 7l2 2 2-3" stroke="#9b7aff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ergo-txt"><div class="ergo-name">Effacement Progressif (Fading UI)</div><div class="ergo-desc">Fade-out automatique après 3 s d'inactivité.</div><div class="ergo-status st-off" id="es3">○ En attente</div></div></div>
+      </div>
+    </div>
+    <div class="hold-hint">Appui long sur la vidéo pour <span>afficher / masquer</span> les contrôles</div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ─── state ─── */
+const sliders={vib:60,sai:75,aud:40};
+let activeSlider='vib';
+let curProfile='standard';
+let wfRaf,smRaf;
+const scenes=[
+  {label:"Scène 1 — Forêt nocturne",bg:"radial-gradient(ellipse at 30% 60%,#0f3020,#081810 40%,#030a08)",sat:.7,temp:.3,drama:"Tension douce",hz:90,hapticOn:false,mode:"dialogue"},
+  {label:"Scène 2 — Incendie",bg:"radial-gradient(ellipse at 50% 80%,#6b1a00,#3a0d00 40%,#150400)",sat:.95,temp:.9,drama:"Oppressif",hz:180,hapticOn:true,mode:"action"},
+  {label:"Scène 3 — Mer nocturne",bg:"radial-gradient(ellipse at 50% 20%,#0a2a4a,#051520 60%,#020810)",sat:.8,temp:.2,drama:"Mélancolie",hz:60,hapticOn:true,mode:"neutral"},
+  {label:"Scène 4 — Ville néon",bg:"radial-gradient(ellipse at 70% 50%,#2a1040,#150820 50%,#050208)",sat:.9,temp:.6,drama:"Anxieux",hz:140,hapticOn:false,mode:"dialogue"}
+];
+let curScene=0,playing=false,saillOn=true,pct=23,vtime=272,raf,holdT,ctrlVis=false,fadeT;
+
+/* ─── TABS ─── */
+function goTab(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+  const idx={'tokens':0,'calib':1,'player':2}[id];
+  document.querySelectorAll('.tab')[idx].classList.add('on');
+  if(id==='player')initPlayer();
+  if(id==='calib'){setTimeout(()=>{renderPreview();},100);}
+}
+
+/* ─── TOKENS ─── */
+function togTier(card){card.classList.toggle('exp');card.querySelector('.tier-chev').textContent=card.classList.contains('exp')?'▲':'▼';}
+let dAnim=false;
+function simDelta(){
+  if(dAnim)return;dAnim=true;
+  const st=document.getElementById('dst'),fill=document.getElementById('dfill'),pctEl=document.getElementById('dpct');
+  const steps=[{a:'Neutre',c:'Standby',h:'—'},{a:'Tension montante',c:'Waveform low',h:'60 Hz'},{a:'Oppressif',c:'Pulsing',h:'180 Hz'},{a:'Rupture chromatique',c:'Burst',h:'240 Hz'}];
+  let v=0;st.style.color='var(--amber)';st.textContent='Calcul en cours...';
+  const tick=()=>{
+    v=Math.min(v+1.8,100);fill.style.width=v+'%';pctEl.textContent=Math.round(v)+'%';
+    const si=v<25?0:v<50?1:v<75?2:3;
+    document.getElementById('fn-amb').textContent=steps[si].a;
+    document.getElementById('fn-comp').textContent=steps[si].c;
+    document.getElementById('fn-hz').textContent=steps[si].h;
+    if(v>=25){st.style.color='var(--green)';st.textContent='✓ Signal transmis — ΔI > seuil'}
+    if(v<100){requestAnimationFrame(tick)}
+    else{setTimeout(()=>{v=0;fill.style.width='0%';pctEl.textContent='0%';document.getElementById('fn-amb').textContent='Oppressif';document.getElementById('fn-comp').textContent='Pulsing';document.getElementById('fn-hz').textContent='180 Hz';st.style.color='var(--tx3)';st.textContent='En attente';dAnim=false;},2000);}
+  };tick();
+}
+
+/* ─── CALIBRAGE PROFILES ─── */
+const profileData={
+  standard:{name:'Mode standard',persona:'Expérience complète activée',wfDesc:'"Tous les canaux sensoriels sont actifs par défaut."',smDesc:'Saillance standard — densité normale',avDesc:'Descriptions vocales modérées'},
+  thomas:{name:'Thomas · Dyschromatopsie',persona:'Thomas — signal sub-perceptuel discret',wfDesc:'"Si la musique devient stressante, je comprends que la scène est tendue." — Thomas, deutéranopie',smDesc:'Hachures renforcées — substitut de la chrominance manquante',avDesc:'Audio minimal — Thomas préfère ne pas rompre la diégèse'},
+  eleonore:{name:'Éléonore · Luminance',persona:'Éléonore — lecture logique de la luminance',wfDesc:'"Je travaille la couleur de manière logique, pas instinctive." — Éléonore, DA',smDesc:'Saillance haute précision — priorité à la luminance et aux contrastes',avDesc:'Audio descriptions enrichies — terminologie technique'},
+  hypersens:{name:'Hypersensibilité',persona:'Profil hypersensible — stimuli réduits',wfDesc:'Vibration douce et continue — aucun transitoire abrupt, pas de pic sensoriel',smDesc:'Saillance atténuée — densité réduite de 40%',avDesc:'Volume minimal — voix neutre, débit lent'}
+};
+
+function selProf(btn,prof){
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  curProfile=prof;
+  renderPreview();
+}
+
+/* ─── SLIDERS ─── */
+function onSlider(type,val){
+  sliders[type]=parseInt(val);
+  const ids={vib:['sv1','pd1'],sai:['sv2','pd2'],aud:['sv3','pd3']};
+  document.getElementById(ids[type][0]).textContent=Math.round(val)+'%';
+  const pd=document.getElementById(ids[type][1]);
+  pd.classList.remove('go');void pd.offsetWidth;pd.classList.add('go');
+  setTimeout(()=>pd.classList.remove('go'),450);
+  activeSlider=type;
+  renderPreview();
+}
+
+/* ─── PREVIEW RENDER ─── */
+function renderPreview(){
+  const prof=profileData[curProfile]||profileData.standard;
+  const panel=document.getElementById('prevPanel');
+  panel.classList.add('active');
+
+  const labelMap={vib:'Aperçu · Vibration haptique',sai:'Aperçu · Saillance chromatique',aud:'Aperçu · Descriptions vocales'};
+  document.getElementById('prevLabel').textContent=labelMap[activeSlider];
+  document.getElementById('prevPersonaName').textContent=prof.persona;
+
+  const vib=sliders.vib/100,sai=sliders.sai/100,aud=sliders.aud/100;
+
+  /* update descriptions */
+  document.getElementById('wfDesc').textContent=prof.wfDesc;
+  document.getElementById('smDesc').textContent=prof.smDesc;
+  document.getElementById('avDesc').textContent=prof.avDesc;
+
+  /* Hz display */
+  const hz=Math.round(60+vib*160);
+  document.getElementById('wfHz').textContent=hz+' Hz';
+  const modes=['Silence haptique','Vibration douce','Pulsing modéré','Pulsing intense','Burst maximal'];
+  const mi=Math.min(4,Math.floor(vib*5));
+  document.getElementById('wfMode').textContent=modes[mi];
+
+  /* saillance density */
+  document.getElementById('smDensity').textContent='Densité '+Math.round(sai*100)+'%';
+
+  /* audio words/min */
+  const wpm=Math.round(aud*30);
+  document.getElementById('avWords').textContent='~'+wpm+' mots/min';
+
+  /* draw waveform */
+  drawWaveform(vib,curProfile);
+  /* draw saillance mini */
+  drawSaillMini(sai,curProfile);
+  /* draw audio bars */
+  drawAudioBars(aud,curProfile);
+}
+
+function drawWaveform(intensity,prof){
+  const cv=document.getElementById('wfCv');
+  const par=cv.parentElement;
+  cv.width=par.clientWidth||200;cv.height=par.clientHeight||50;
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+
+  cancelAnimationFrame(wfRaf);
+  const draw=()=>{
+    ctx.clearRect(0,0,W,H);
+    const t=Date.now()/1000;
+    ctx.strokeStyle= prof==='thomas'?'rgba(245,166,35,0.85)': prof==='eleonore'?'rgba(0,212,200,0.85)': prof==='hypersens'?'rgba(155,122,255,0.6)':'rgba(0,212,200,0.85)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+
+    if(intensity<0.05){
+      /* flat line — silence */
+      ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);
+    } else if(prof==='thomas'){
+      /* saccadé / pulsed — high freq abrupt */
+      for(let x=0;x<W;x++){
+        const phase=x/W*Math.PI*2*(4+intensity*8)+t*(2+intensity*4);
+        const env=Math.abs(Math.sin(phase*0.5));
+        const amp=(H/2-4)*intensity*env;
+        const y=H/2+Math.sin(phase)*amp;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+    } else if(prof==='eleonore'){
+      /* smooth luminance wave */
+      for(let x=0;x<W;x++){
+        const phase=x/W*Math.PI*2*(2+intensity*4)+t*1.5;
+        const amp=(H/2-4)*intensity;
+        const y=H/2+Math.sin(phase)*amp*0.7+Math.sin(phase*2.3)*amp*0.3;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+    } else if(prof==='hypersens'){
+      /* very gentle sine */
+      for(let x=0;x<W;x++){
+        const phase=x/W*Math.PI*2*1.5+t*0.8;
+        const amp=(H/2-6)*intensity*0.5;
+        const y=H/2+Math.sin(phase)*amp;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+    } else {
+      /* standard */
+      for(let x=0;x<W;x++){
+        const phase=x/W*Math.PI*2*(3+intensity*5)+t*2;
+        const amp=(H/2-4)*intensity;
+        const y=H/2+Math.sin(phase)*amp;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+
+    /* threshold dots for haptic pulses */
+    if(prof==='thomas'&&intensity>0.1){
+      ctx.fillStyle='rgba(245,166,35,0.5)';
+      const pulseCount=Math.round(intensity*6);
+      for(let i=0;i<pulseCount;i++){
+        const px=W*(i+0.5)/pulseCount;
+        const py=H/2-((H/2-6)*intensity*Math.abs(Math.sin(t*3+i)));
+        ctx.beginPath();ctx.arc(px,py,2,0,Math.PI*2);ctx.fill();
+      }
+    }
+    wfRaf=requestAnimationFrame(draw);
+  };draw();
+}
+
+function drawSaillMini(density,prof){
+  const cv=document.getElementById('smCv');
+  const par=cv.parentElement;
+  cv.width=par.clientWidth||200;cv.height=par.clientHeight||50;
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+
+  cancelAnimationFrame(smRaf);
+  const draw=()=>{
+    ctx.clearRect(0,0,W,H);
+    const t=Date.now()/1000;
+    const segW=5,segs=Math.floor(W/segW);
+    const temp=prof==='thomas'?0.7:prof==='eleonore'?0.5:0.5;
+
+    for(let i=0;i<segs;i++){
+      const x=i*segW;
+      const wave=Math.sin(i*.28+t*1.8)*.3+.7;
+      const li=density*wave*(0.5+Math.sin(i*.14+t)*.5);
+      const hc=Math.max(1,Math.round(li*6));
+      const sp=segW/(hc+1);
+      const ang=temp>.5?Math.PI/4:-Math.PI/4;
+
+      let r,g,b,a=0.8;
+      if(prof==='eleonore'){r=0;g=0.86;b=0.8;}
+      else if(prof==='thomas'){r=0.96;g=0.65;b=0.14;}
+      else if(prof==='hypersens'){r=0.6;g=0.48;b=1;a=0.5;}
+      else{r=0;g=0.86;b=0.8;}
+
+      ctx.strokeStyle=`rgba(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)},${a})`;
+      ctx.lineWidth=0.9;
+      for(let h=1;h<=hc;h++){
+        const hx=x+h*sp;
+        ctx.beginPath();
+        ctx.moveTo(hx-Math.cos(ang)*H/2,H/2-Math.sin(ang)*H/2);
+        ctx.lineTo(hx+Math.cos(ang)*H/2,H/2+Math.sin(ang)*H/2);
+        ctx.stroke();
+      }
+    }
+    smRaf=requestAnimationFrame(draw);
+  };draw();
+}
+
+function drawAudioBars(level,prof){
+  const wrap=document.getElementById('audioBars');
+  wrap.innerHTML='';
+  const count=12;
+  const colors={thomas:'rgba(245,166,35,0.8)',eleonore:'rgba(0,212,200,0.8)',hypersens:'rgba(155,122,255,0.6)',standard:'rgba(155,122,255,0.8)'};
+  const col=colors[prof]||colors.standard;
+  for(let i=0;i<count;i++){
+    const b=document.createElement('div');
+    b.className='bar';
+    b.style.background=col;
+    const base=prof==='hypersens'?level*0.4:level;
+    const h=Math.max(3,Math.round((base*(0.3+Math.random()*0.7))*38));
+    b.style.height=h+'px';
+    wrap.appendChild(b);
+  }
+  /* animate bars */
+  setInterval(()=>{
+    wrap.querySelectorAll('.bar').forEach(b=>{
+      const base=prof==='hypersens'?level*0.4:level;
+      const h=Math.max(3,Math.round((base*(0.2+Math.random()*0.8))*38));
+      b.style.height=h+'px';
+    });
+  },200);
+}
+
+/* ─── PLAYER ─── */
+function initPlayer(){applyScene(0);drawSaill();updateDI(12,8);updateSilence();}
+function applyScene(i){
+  const s=scenes[i];
+  document.getElementById('sbg').style.background=s.bg;
+  document.getElementById('slbl').textContent=s.label;
+  updateSilence();
+  const sat=Math.round(s.sat*60+10),lum=Math.round(s.temp*50+5);
+  updateDI(sat,lum);updateErgo(i);
+}
+function updateDI(sat,lum){
+  document.getElementById('diSat').style.width=sat+'%';document.getElementById('diSatV').textContent=sat+'%';
+  document.getElementById('diLum').style.width=lum+'%';document.getElementById('diLumV').textContent=lum+'%';
+  const trig=sat>=25||lum>=25;
+  document.getElementById('diAct').textContent=trig?'▶ Signal transmis':'◼ Signal lissé';
+  document.getElementById('diAct').style.color=trig?'rgba(0,212,200,.7)':'rgba(255,255,255,.25)';
+}
+function updateSilence(){
+  const s=scenes[curScene];const badge=document.getElementById('silBadge');const txt=document.getElementById('silTxt');
+  if(s.mode==='dialogue'){badge.className='silence-badge act';txt.textContent='Dialogue · Silence haptique';}
+  else if(s.hapticOn){badge.className='silence-badge hon';txt.textContent=s.drama+' · Haptique actif';}
+  else{badge.className='silence-badge';txt.textContent='Neutre · En veille';}
+}
+function updateErgo(i){
+  const s=scenes[i];const sat=Math.round(s.sat*60+10);
+  const e1=document.getElementById('es1');
+  if(sat>=25){e1.textContent='● Actif — Signal transmis ('+sat+'% > seuil)';e1.className='ergo-status st-on';}
+  else{e1.textContent='◼ Actif — Signal lissé';e1.className='ergo-status st-sb';}
+  const e2=document.getElementById('es2');
+  if(s.mode==='dialogue'){e2.textContent='◐ En veille — Scène dialogue';e2.className='ergo-status st-sb';}
+  else if(s.hapticOn){e2.textContent='● Actif — Rupture dramatique';e2.className='ergo-status st-on';}
+  else{e2.textContent='○ Neutre';e2.className='ergo-status st-off';}
+}
+let saillAnimOn=false;
+function drawSaill(){
+  const cv=document.getElementById('saillCv');if(!cv)return;
+  const par=cv.parentElement;cv.width=par.clientWidth||300;cv.height=par.clientHeight||26;
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);if(!saillOn)return;
+  const sc=scenes[curScene];const t=Date.now()/1000;
+  const segW=5,segs=Math.floor(W/segW);
+  for(let i=0;i<segs;i++){
+    const x=i*segW;const wave=Math.sin(i*.28+t*1.8)*.3+.7;
+    const li=sc.sat*wave*(0.65+Math.sin(i*.14+t)*.35);
+    const hc=Math.round(li*5)+1;const sp=segW/(hc+1);
+    const ang=sc.temp>.5?Math.PI/4:-Math.PI/4;
+    let r,g,b;
+    if(sc.temp>.6){r=0.92;g=0.38+sc.temp*.18;b=0.08;}
+    else if(sc.temp<.4){r=0;g=0.72;b=0.92;}
+    else{r=0;g=0.86;b=0.8;}
+    ctx.strokeStyle=`rgba(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)},0.72)`;
+    ctx.lineWidth=0.9;
+    for(let h=1;h<=hc;h++){const hx=x+h*sp;ctx.beginPath();ctx.moveTo(hx-Math.cos(ang)*H/2,H/2-Math.sin(ang)*H/2);ctx.lineTo(hx+Math.cos(ang)*H/2,H/2+Math.sin(ang)*H/2);ctx.stroke();}
+  }
+  if(saillOn)requestAnimationFrame(drawSaill);
+}
+function togSaill(){saillOn=!saillOn;document.getElementById('saillTog').classList.toggle('on',saillOn);document.getElementById('saillWrap').style.opacity=saillOn?'1':'0';if(saillOn)drawSaill();}
+function selScene(i,btn){curScene=i;document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');applyScene(i);}
+function togPlay(){playing=!playing;const ico=document.getElementById('ppIco');if(playing){ico.innerHTML='<rect x="2" y="1" width="3.5" height="12" rx=".8"/><rect x="8.5" y="1" width="3.5" height="12" rx=".8"/>';tickPlay();}else{ico.innerHTML='<path d="M3 1.5 L13 7 L3 12.5 Z"/>';cancelAnimationFrame(raf);}}
+function tickPlay(){if(!playing)return;pct=Math.min(pct+.004,100);vtime=Math.min(vtime+.08,19*60+47);const m=Math.floor(vtime/60),s=Math.floor(vtime%60);document.getElementById('timDisp').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} / 19:47`;document.getElementById('progFill').style.width=pct+'%';raf=requestAnimationFrame(tickPlay);}
+function seekVid(e){const tr=document.getElementById('progTrack');const rc=tr.getBoundingClientRect();pct=Math.max(0,Math.min(100,(e.clientX-rc.left)/rc.width*100));document.getElementById('progFill').style.width=pct+'%';vtime=pct/100*(19*60+47);}
+let holdTO;
+function holdStart(e){holdTO=setTimeout(()=>{showCtrl(e);},380);}
+function holdEnd(){clearTimeout(holdTO);}
+function showCtrl(e){
+  ctrlVis=!ctrlVis;const ov=document.getElementById('ctrlOv');ov.classList.toggle('vis',ctrlVis);
+  if(e)addRipple(e);
+  document.getElementById('es3').textContent=ctrlVis?'● Actif — Contrôles visibles · Fade-out 3s':'○ En attente — Appui long pour rouvrir';
+  document.getElementById('es3').className='ergo-status '+(ctrlVis?'st-on':'st-off');
+  if(ctrlVis){clearTimeout(fadeT);const fb=document.getElementById('fadeBar');fb.style.transition='none';fb.style.transform='scaleX(1)';setTimeout(()=>{fb.style.transition='transform 3s linear';fb.style.transform='scaleX(0)';},50);fadeT=setTimeout(()=>{ctrlVis=false;ov.classList.remove('vis');document.getElementById('es3').textContent='○ Effacement — Fade-out terminé';document.getElementById('es3').className='ergo-status st-off';},3000);}
+}
+function addRipple(e){const vp=document.getElementById('vp');const rc=vp.getBoundingClientRect();const x=(e.touches?e.touches[0].clientX:e.clientX)-rc.left;const y=(e.touches?e.touches[0].clientY:e.clientY)-rc.top;const r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';vp.appendChild(r);setTimeout(()=>r.remove(),620);}
+
+/* init */
+setTimeout(renderPreview,200);
+</script>
